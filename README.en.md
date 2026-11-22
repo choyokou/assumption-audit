@@ -2,7 +2,38 @@
 
 # Assumption Audit
 
-A Codex skill for checking the assumptions behind an experiment, product decision, or technical choice. It audits its own experiment designs before delivery and reviews drafts you bring from other AI tools. When a flaw would change the outcome, the first sentence names the faulty premise and the conclusion or decision it could lead to. The skill proposes a check that exercises the suspected failure and applies the correction to the plan or text you asked for.
+[Install and use](#install-and-use) · [21 blind-test prompts](references/blind-tests.en.md) · [MIT license](LICENSE)
+
+## 576 GPU hours later, you discover the experiment was flawed from the start
+
+![Fictional compute bill for 576 GPU hours](assets/promo/experiment-bill.jpg)
+
+*The bill and the reactions are fictional, and the images are generated illustrations. The excerpts below are English translations from a real comparison on the same prompt.*
+
+You ask AI to design an experiment to transfer math gains between two models. Their architectures match, and the weights fit. The models were trained independently, so two components with the same index may do different jobs. The run finishes with a lower score, and you still do not know whether the math gains can transfer.
+
+- **Default response.** “If match quality is very low, the preregistered experiment can still run. Interpret the results as the success or failure of that matching and transplant method.”
+- **With Assumption Audit.** “Resume the main experiment only after the revised plan passes validation on held-out inputs.”
+
+### “I used a standard function. How did I end up testing a different method?”
+
+![A research workstation displaying the np.cov call that changes the calculation](assets/promo/covariance-default.jpg)
+
+The paper computes its matrix from the raw data. The code uses `np.cov`, which subtracts the mean first. **The same data can produce different directions.** Both responses restored the paper's formula. The response with the skill also put a check in the final plan. Run both versions on **the same input**, compare the directions they select, and pause the formal comparison if they disagree.
+
+### “The preflight passed. It never ran the step we meant to test.”
+
+![Tests reach only 384 tokens, while cache eviction starts above 512](assets/promo/eviction-coverage.jpg)
+
+The cache only starts evicting old entries above **512**. The longest test run reached **384**. Both responses caught that the test never triggered eviction. The response with the skill specified **what to check once entries are actually removed**. Keep the same entries in the reference and physical eviction implementations, then compare their outputs one step at a time. If they disagree, pause the long-context evaluation.
+
+*The comparison used `gpt-6.1-sol`, with one fresh run per prompt in each condition, with and without the skill installed. Personal global `AGENTS.md` rules were isolated. Both conditions identified the core risks on all four prompts. These three examples show differences in the final plans.*
+
+**Assumption Audit** is an MIT-licensed Codex skill. It checks assumptions before Codex hands over an experiment it designed, reviews an existing plan, or gives a recommendation that matters. It proposes a small check that exercises the suspected failure and puts the correction and stop conditions in the plan you will actually use.
+
+> “The plots are done. Now I have to rewrite step one.”
+
+![A researcher in a fictional scene holding his head over finished experiment plots late at night](assets/promo/researcher-reaction.jpg)
 
 ## Install and use
 
