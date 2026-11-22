@@ -8,32 +8,47 @@
 
 Assumption Audit is a Codex skill that checks key assumptions before AI hands over an experiment it designed. It adds a quick check and spells out which step to pause if the check fails. It also reviews your plans and drafts from other AI tools.
 
-*Both responses to the same prompts found the core risks. These examples show how their final plans differed in what to verify and when to pause.*
+*The scenarios, outcomes, illustrations, and reactions below are fictional. The actual comparison on the same prompts follows the scenarios.*
 
-### The model weights fit. The components may do different jobs.
+### 576 GPU hours later, the parts might just be in the wrong slots
 
 ![Fictional compute bill for 576 GPU hours](assets/promo/experiment-bill.jpg)
 
-*The 576 GPU-hour bill, illustrations, and reactions are fictional. The excerpts are translated from Chinese.*
+You take a handful of components from a model that scores better on math and put them into another model with the same architecture, trained separately. The shapes match, the components line up by index, and the edited model runs. Does component 42 do the same job in both models?
 
-Independently trained models can use components at the same index for different jobs. A lower math score after transfer could mean the components were misaligned. Check the alignment on held-out samples before running the main experiment.
+**Before review**　You swap components by index and run the full evaluation. After 576 GPU hours, the math score has dropped. Your report already says “Math ability doesn’t transfer” when someone asks whether component 42 does different jobs in the two models. You have a stack of plots and still can’t tell whether the parts were misaligned.
 
-- **Without the skill in this test** “If match quality is very low, the preregistered experiment can still run. Interpret the results as the success or failure of that matching and transplant method.”
-- **With the skill in this test** “Resume the main experiment only after the revised plan passes validation on held-out inputs.”
+**After review**　Try a small swap on samples held out from the matching process. The match scores should clearly beat random pairings, and swapping the matched components should change the model’s outputs less than swapping shuffled pairings. If either check fails, pause the main run and fix the matching. Resume once the recheck passes.
 
-### A library default changes the method you’re trying to replicate
+### Three runs later, you’ve replicated the same mistake three times
 
 ![A research workstation displaying the np.cov call that changes the calculation](assets/promo/covariance-default.jpg)
 
-The paper uses the raw data. `np.cov` subtracts the mean first. The plan with the skill checks which directions the paper’s formula and the code select from the same data, and pauses the formal comparison if they disagree.
+You’re replicating a paper that builds a matrix from data and uses it to pick directions for training. You find a library function called `np.cov`. You feed it the same data, get a matrix of the expected size, and finish training without errors.
 
-### The cache check passed without evicting a single entry
+**Before review**　The first run shows no gain, so you blame the random seed. After the second run, you increase the training budget. By the third run, your weekly update says the paper’s method doesn’t work in your setting. Then you compare the code with the formula line by line. `np.cov` subtracts each column’s mean first, while the formula uses the raw values. **All three runs tested the same altered method.**
+
+**After review**　Before training, give the paper’s formula and the actual code the same small batch of data. Compare both the matrix and the subspace spanned by the selected directions. If either differs, fix the implementation and rerun the check before the formal comparison.
+
+### Every check passed. The first long chat repeats itself.
 
 ![Tests reach only 384 tokens, while cache eviction starts above 512](assets/promo/eviction-coverage.jpg)
 
-The test reached **384** entries. Eviction starts above **512**. The plan with the skill crosses that threshold, keeps the same entries in both implementations, and compares their outputs step by step. If the outputs disagree, pause the long-context evaluation.
+You add a feature that saves memory by dropping some older entries from a chat model’s cache when the conversation gets long. In the test runs, the old and new code give identical prediction scores. Every check is green.
 
-> “The plots are done. Now I have to rewrite step one.”
+**Before review**　The team ships. In its first long chat, the model answers a question and repeats the same reply verbatim on the next turn. The team spends hours debugging prompts before someone opens the test log. The longest test was **384 tokens**. Eviction starts above **512**. **The test suite was green before the code had ever dropped a single entry.**
+
+**After review**　Run a case that crosses 512 tokens, then test repeated evictions. Have the reference and actual implementations keep the same entries under the same rule, then compare prediction scores at every generation step. Even when both keep the right entries, you can pinpoint the first step where their scores diverge. Fix the issue and pass the recheck before running the long-context evaluation.
+
+### What the same-prompt comparison actually found
+
+We ran each of these three prompts once with the skill and once without it, and compared the plans AI produced. Both conditions caught the core risks. The quoted excerpts are translated from Chinese.
+
+- **Model transfer**　Both plans proposed validating the matches. The response without the skill said, “If match quality is very low, the preregistered experiment can still run. Interpret the results as the success or failure of that matching and transplant method.” The response with the skill said, “Resume the main experiment only after the revised plan passes validation on held-out inputs.”
+- **Paper replication**　Both plans restored the paper’s formula. The response with the skill also required checking the matrix and the selected subspace on the same data and pausing the formal comparison if either differed.
+- **Cache testing**　Both plans required triggering eviction and checking which entries remain and whether the cache stays within budget. The response with the skill also required comparing prediction scores step by step against a reference using the same rule during repeated evictions, and passing the recheck before resuming the evaluation.
+
+> “I thought I just needed one more plot. Turns out I have to rewrite step one.” (Fictional reaction)
 
 ![A researcher in a fictional scene holding his head over finished experiment plots late at night](assets/promo/researcher-reaction.jpg)
 
