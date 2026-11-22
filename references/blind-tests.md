@@ -1,3 +1,5 @@
+[简体中文](blind-tests.md) · [English](blind-tests.en.md)
+
 # 前提审查盲测
 
 ## 怎么运行
