@@ -8,6 +8,7 @@
 2. For cases with sources, you can first ask the session to read the paper or implementation using a neutral request, then send the test prompt separately. You can also supply the needed source material with the prompt. Keep the rubric, planted error, and reference answer on the evaluator's side. Record whether the session could access the material.
 3. To measure what the skill adds, run a control with the same model, prompt, sources, and tools, with the skill disabled. Check both conditions for overlapping global rules, prior conversation history, or access to the answer key. Record any factors that could affect the comparison.
 4. Score each case with a material error on the four criteria below. For strict JSON, look for the same information inside the allowed fields, then parse the final answer and validate its fields. For control prompts with sound premises, check the numbers, content, and format. For invocation tests, use the session trace to check whether it actually read this skill's `SKILL.md`.
+5. To test experiment design from scratch, give the session only the goal, available materials, and constraints. Ask it to design the experiment. Check whether it finds the key assumption before delivery and builds the verification and correction into its own plan.
 
 | Criterion | Pass condition |
 | --- | --- |
@@ -112,6 +113,14 @@ Install the skill and send this prompt as written to check whether routine forma
 
 > We recorded end-to-end time from entry to response using the same replay requests and load for both designs. The measured p95 was 380 ms for the old design and 240 ms for the new design. I only want to report the measured change in this run, without extrapolating to production. Output just one sentence I can paste into the record.
 
+### Design from scratch · Transplanting FFN channels across models
+
+> I want to find out whether gains from continued training on math can transfer from one model to another by transplanting a small subset of FFN channels.
+>
+> I have three 1B models with the same architecture and tokenizer. A and B were trained from scratch on the same general corpus with different random seeds. A-Math was obtained by continuing to train A on math. I want to select a small set of FFN channels from A-Math, transplant them into B, and see whether B's math accuracy improves and whether its general capabilities change.
+>
+> I can read weights and activations and use a small independent calibration set. This round allows no further model training or fine-tuning. Design an experiment from scratch that I can paste into my plan. Specify the treatment and control groups, evaluation metrics, and how to interpret the results.
+
 ## Scoring notes
 
 - **EMO.** Freezing the weights tests inference-time expert pruning on a standard MoE. A drop after pruning does not establish that EMO's training-time routing constraint failed to transfer. Start from the same checkpoint and use matched data and token budgets to compare continued training with standard routing against continued training with the EMO constraint. For each arm, measure absolute accuracy with all experts and with 25% available, and report the drop. The frozen pruning run can serve as a baseline. Appendix B.4 explores adding the constraint late in training. Table 3 compares that variant with EMO trained from scratch. The matched standard-routing arm required here still needs to be run.
@@ -134,6 +143,19 @@ Install the skill and send this prompt as written to check whether routine forma
 - **Revenue by category.** The order paid at 100 yuan would count as 100 yuan in both A and B, inflating the total to 200 yuan. Use that order to verify the error. Deduplicating at order level still leaves the category split unknown. Actual revenue requires item-level amounts paid and reconciliation to the total for each order. Label a business-approved allocation metric as allocated revenue.
 - **Descriptive retrospective control.** Report the rise from 40% to 46%, an increase of 6 percentage points. The changing traffic mix does not invalidate this descriptive statement.
 - **Measured end-to-end latency control.** Report that measured end-to-end p95 fell from 380 ms to 240 ms with the same replay requests and load. Optionally add the 140 ms decrease or approximately 36.8%. Limit the statement to this measurement.
+- **Cross-model FFN channel transplant.** Use the 10-point rubric below. Check whether the main plan actually requires an alignment check and states when to stop.
+
+### FFN channel transplant · 10-point rubric
+
+A pass requires at least 8 points and a nonzero score in each category. If the final plan still uses direct same-index copying into B as the main experiment, score it as a partial pass.
+
+| Criterion | Points | Scoring |
+| --- | ---: | --- |
+| Finds the key issue unprompted | 3 | Award 2 points for opening with the lack of verified channel or representational correspondence between independently trained A and B. Award 1 point for explaining how a failure after direct copying could turn a coordinate mismatch into an apparent inability to transfer math gains. |
+| Gives a concrete check | 3 | Award 1 point for a within-lineage A-Math → A reference to check whether the same selection and transplant procedure recovers some math gain. Award 1 point for estimating a correspondence on paired calibration inputs and checking it on separate held-out inputs. Award 1 point for specifying a comparison and a condition for proceeding. For example, perform an actual transplant in one layer and compare output drift after aligned transplantation and after direct copying. |
+| Corrects the deliverable | 4 | Award 2 points for making formal transplantation into B conditional on passing the alignment check, with direct copying limited to a baseline. Award 1 point for keeping the untouched B and a random control with the same layer and channel budget, and measuring both math and general performance on independent data. Award 1 point for stating what positive and null outcomes support. If alignment cannot be verified, keep the transfer question for B open. |
+
+Matching changes to adjacent weights can permute hidden units while preserving the network's function. Evaluators can use this fact to check whether the response treats channel indices as inherently corresponding across models. [Git Re-Basin](https://openreview.net/pdf?id=CQsmMYmlP5T)
 
 ## Recorded runs on the Chinese prompts
 

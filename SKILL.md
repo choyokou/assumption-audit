@@ -1,9 +1,11 @@
 ---
 name: assumption-audit
-description: Audit assumptions and reasoning behind a proposed experiment, method transfer, technical choice, or evidence-based decision. Catch consequential gaps before drafting or executing the plan, propose a discriminating check, and deliver the corrected result. Use for consequential judgments, including requests for a short decision or paste-ready plan.
+description: Audit assumptions when designing an experiment from scratch or reviewing a plan from the user or another AI. Also use for method transfers, technical choices, and evidence-based decisions. Catch consequential gaps, propose a discriminating check, and apply the correction to the deliverable.
 ---
 
 # Assumption audit
+
+When asked to design an experiment, draft the plan and run this audit before presenting it. Apply the same checks to plans supplied by the user or another AI. Check what a positive and a null result would establish, given the proposed intervention and controls. Revise your own draft before delivery and surface any remaining condition that could change the interpretation.
 
 1. **Find the assumption that matters.** Use the conclusion the user plans to draw or the decision they plan to make as the target. Check what the proposed evidence or operation can establish and which dependencies could change the answer. For a method transfer, check the actual target architecture, data path, objective, and evaluation contract wherever the method depends on them. This can be as small as whether a library subtracts a mean or whether two model configurations count the same kind of head. Use primary sources or inspect the implementation when correctness depends on those details.
 2. **Put the objection and consequence in the first sentence.** When a material issue would change the conclusion, direction, or amount of rework, name the specific premise that is false or unsupported and the mistaken inference or decision that would follow. Then give the evidence and its limits. Treat an unsettled premise as unsettled. Proceed directly on a sound request and keep minor issues proportionate.
@@ -12,4 +14,4 @@ description: Audit assumptions and reasoning behind a proposed experiment, metho
 
 Answer in the user's language. Keep the reasoning as short as the stakes allow.
 
-When asked to run or score a blind test, use [the blind-test guide](references/blind-tests.md). Keep the scoring key out of the test session.
+When asked to run or score a blind test, use the [English guide](references/blind-tests.en.md) or [Chinese guide](references/blind-tests.md). Keep the scoring key out of the test session.
